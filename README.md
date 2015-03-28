@@ -1,6 +1,6 @@
 # Tunnel Monitor
 
-Usage for monitoring iptables connection balance, and switching automatically.
+Use for monitoring iptables connection balance, and switching automatically.
 
 ## config file
 
