@@ -15,6 +15,10 @@ func generator() {
 		ipt.ClearChain("mangle", tunnel.ChainName)
 	}
 	var weightSum, i int
+	var chainSerials map[string]int
+	var chainSerialsTotal map[string]int
+	chainSerials = make(map[string]int)
+	chainSerialsTotal = make(map[string]int)
 	for _, tunnel := range tunnels {
 		if tunnel.status {
 			weightSum += tunnel.Weight
@@ -23,8 +27,25 @@ func generator() {
 	for _, tunnel := range tunnels {
 		if tunnel.status {
 			for j := 0; j < tunnel.Weight; j++ {
+				_, exists := chainSerialsTotal[tunnel.ChainName]
+				if !exists {
+					chainSerialsTotal[tunnel.ChainName] = 0
+				}
+				chainSerialsTotal[tunnel.ChainName]++
+				i++
+			}
+		}
+	}
+	for _, tunnel := range tunnels {
+		if tunnel.status {
+			for j := 0; j < tunnel.Weight; j++ {
+				_, exists := chainSerials[tunnel.ChainName]
+				if !exists {
+					chainSerials[tunnel.ChainName] = 0
+				}
 				logger.Debug("iptables -t mangle -A %s -m statistic --mode nth --every %s --packet %s -j MARK --set-xmark %s", tunnel.ChainName, strconv.Itoa(weightSum), strconv.Itoa(i), tunnel.Mark)
-				ipt.Append("mangle", tunnel.ChainName, "-m", "statistic", "--mode", "nth", "--every", strconv.Itoa(weightSum), "--packet", strconv.Itoa(i), "-j", "MARK", "--set-xmark", tunnel.Mark)
+				ipt.Append("mangle", tunnel.ChainName, "-m", "statistic", "--mode", "nth", "--every", strconv.Itoa(chainSerialsTotal[tunnel.ChainName]), "--packet", strconv.Itoa(chainSerials[tunnel.ChainName]), "-j", "MARK", "--set-xmark", tunnel.Mark)
+				chainSerials[tunnel.ChainName]++
 				i++
 			}
 		}
