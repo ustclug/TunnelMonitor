@@ -1,17 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"github.com/coreos/go-iptables/iptables"
 	"github.com/tatsushid/go-fastping"
 	"sync"
 	"time"
-	"fmt"
 )
 
 type TunnelInfo struct {
 	Ip             string
 	Mark           string
 	Weight         int
+	ChainName      string
 	RecoverCommand string
 	DownCommand    string
 	status         bool
@@ -19,7 +20,7 @@ type TunnelInfo struct {
 }
 
 var (
-	tunnel        map[string]*TunnelInfo
+	tunnels       map[string]*TunnelInfo
 	generatorLock sync.Mutex
 	ipt           *iptables.IPTables
 	pin           *fastping.Pinger
@@ -27,7 +28,7 @@ var (
 )
 
 func init() {
-	tunnel = make(map[string]*TunnelInfo)
+	tunnels = make(map[string]*TunnelInfo)
 	ip2tunnel = make(map[string]string)
 	ipt, _ = iptables.New()
 	pin = fastping.NewPinger()
@@ -39,13 +40,15 @@ func init() {
 func main() {
 	defer logger.Close()
 	logger.Info("System start")
-	for name, t := range tunnel {
+	for name, t := range tunnels {
 		ip2tunnel[t.Ip] = name
 		pin.AddIP(t.Ip)
 	}
-	for n,t:=range tunnel{
-		logger.Debug("[tunnel config]%s: %s",n,fmt.Sprint(*t))
+	for n, t := range tunnels {
+		logger.Debug("[tunnel config]%s: %s", n, fmt.Sprint(*t))
 	}
-	ipt.NewChain("mangle",chainName)
+	for _, tunnel := range tunnels {
+		ipt.NewChain("mangle", tunnel.ChainName)
+	}
 	monitor()
 }

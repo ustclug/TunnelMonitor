@@ -25,10 +25,10 @@ const (
 var (
 	cfg               *goconfig.ConfigFile
 	cfg_tunnel        *goconfig.ConfigFile
-	chainName         string
 	determineTime     int64
 	detectingDuration int64
 	rtt               int64
+
 //	logLevel          int
 )
 
@@ -44,7 +44,7 @@ func initConfig() {
 	}
 }
 func readConfig() {
-	chainName = configCommon("chainName", FATAL)
+	//chainName = configCommon("chainName", FATAL)
 
 	determineTimeIntTmp, err := strconv.Atoi(configCommon("determineTime", INFO))
 	determineTime = int64(determineTimeIntTmp)
@@ -64,47 +64,49 @@ func readConfig() {
 		rtt = 1
 	}
 
-//	switch configCommon("logLevel", WARMING) {
-//	case "FINEST":
-//		logLevel = log4go.FINEST
-//	case "FINE":
-//		logLevel = log4go.FINE
-//	case "DEBUG":
-//		logLevel = log4go.DEBUG
-//	case "TRACE":
-//		logLevel = log4go.TRACE
-//	case "INFO":
-//		logLevel = log4go.INFO
-//	case "WARMING":
-//		logLevel = log4go.WARNING
-//	case "ERROR":
-//		logLevel = log4go.ERROR
-//	case "CRITICAL":
-//		logLevel = log4go.CRITICAL
-//	default:
-//		logLevel = log4go.INFO
-//	}
+	//	switch configCommon("logLevel", WARMING) {
+	//	case "FINEST":
+	//		logLevel = log4go.FINEST
+	//	case "FINE":
+	//		logLevel = log4go.FINE
+	//	case "DEBUG":
+	//		logLevel = log4go.DEBUG
+	//	case "TRACE":
+	//		logLevel = log4go.TRACE
+	//	case "INFO":
+	//		logLevel = log4go.INFO
+	//	case "WARMING":
+	//		logLevel = log4go.WARNING
+	//	case "ERROR":
+	//		logLevel = log4go.ERROR
+	//	case "CRITICAL":
+	//		logLevel = log4go.CRITICAL
+	//	default:
+	//		logLevel = log4go.INFO
+	//	}
 
 	for _, tunnelName := range cfg_tunnel.GetSectionList() {
-		tunnel[tunnelName] = &TunnelInfo{}
+		tunnels[tunnelName] = &TunnelInfo{}
 		ipAddr, err := net.ResolveIPAddr("ip4", configTunnel(tunnelName, "peerIP", FATAL))
 		if err != nil {
 			logger.Critical("peerIP format error for %s: %s ", tunnelName, err.Error())
 		}
-		tunnel[tunnelName].Ip = ipAddr.String()
+		tunnels[tunnelName].Ip = ipAddr.String()
 
-		tunnel[tunnelName].Weight, err = strconv.Atoi(configTunnel(tunnelName, "weight", INFO))
+		tunnels[tunnelName].Weight, err = strconv.Atoi(configTunnel(tunnelName, "weight", INFO))
 		if err != nil {
-			tunnel[tunnelName].Weight = 1
+			tunnels[tunnelName].Weight = 1
 		}
 
-		tunnel[tunnelName].Mark = configTunnel(tunnelName, "mark", FATAL)
+		tunnels[tunnelName].Mark = configTunnel(tunnelName, "mark", FATAL)
 
-		tunnel[tunnelName].RecoverCommand = configTunnel(tunnelName, "recoverCommand", INFO)
+		tunnels[tunnelName].ChainName = configTunnel(tunnelName, "chainName", FATAL)
 
-		tunnel[tunnelName].DownCommand = configTunnel(tunnelName, "downCommand", INFO)
+		tunnels[tunnelName].RecoverCommand = configTunnel(tunnelName, "recoverCommand", INFO)
 
-		tunnel[tunnelName].lastlive, _ = time.Parse(time.ANSIC, time.ANSIC)
+		tunnels[tunnelName].DownCommand = configTunnel(tunnelName, "downCommand", INFO)
+
+		tunnels[tunnelName].lastlive, _ = time.Parse(time.ANSIC, time.ANSIC)
 	}
 }
 
