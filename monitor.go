@@ -10,7 +10,7 @@ import (
 func generator() {
 	generatorLock.Lock()
 	defer generatorLock.Unlock()
-	logger.Info("updating new list...")
+	logger.Debug("updating new list...")
 	for _, tunnel := range tunnels {
 		ipt.ClearChain("mangle", tunnel.ChainName)
 	}
