@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+sed -i 's|dl-cdn.alpinelinux.org|mirrors.ustc.edu.cn|' /etc/apk/repositories
+
+apk update
+apk add --virtual build-deps go git binutils
+
+apk add iptables
+cd /opt/tunnelmonitor
+export GOPATH=/usr/local/go
+mkdir -p $GOPATH
+go get -d ./...
+go build -o /usr/sbin/tunnelmonitor .
+strip /usr/sbin/tunnelmonitor
+mkdir -p /etc/tunnelmonitor
+install -m644 config.example/config.ini /etc/tunnelmonitor
+install -m644 config.example/tunnel.ini /etc/tunnelmonitor
+
+apk del --purge build-deps
+rm -rf /var/cache/apk/* $GOPATH
+mkdir -p /var/log/tunnelmonitor
