@@ -1,7 +1,7 @@
 package main
 
 import (
-	"code.google.com/p/log4go"
+	"github.com/alecthomas/log4go"
 )
 
 var logger log4go.Logger
