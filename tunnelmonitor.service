@@ -1,0 +1,10 @@
+[Unit]
+Description=TunnelMonitor (https://github.com/ustclug/TunnelMonitor)
+After=netfilter-persistent.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/tunnelmonitor
+
+[Install]
+WantedBy=multi-user.target
